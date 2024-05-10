@@ -3,7 +3,6 @@ from langchain import ConversationChain
 from langchain import PromptTemplate
 from langchain.agents import AgentType
 import json
-import xmltodict
 from langchain.agents import initialize_agent
 from langchain.agents import load_tools
 from langchain.agents.load_tools import get_all_tool_names
