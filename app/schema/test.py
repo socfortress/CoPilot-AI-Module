@@ -56,6 +56,7 @@ payload = {
     "data_win_system_providerGuid": "{5770385f-c22a-43e0-bf4c-06f5698ffbd9}",
     "timestamp": "2024-04-17 15:06:57.694",
     "threat_intel_ioc_source": "test",
+    "rule_group1": "windows",
     "data_win_system_opcode": "0"
 }
 
@@ -72,6 +73,20 @@ class TestRequest(BaseModel):
             raise HTTPException(
                 status_code=400,
                 detail="Invalid integration. Only 'wazuh-rule-exclusion' is supported.",
+            )
+        return v
+
+    @validator("prompt")
+    def check_rule_group1(cls, v):
+        if 'rule_group1' not in v:
+            raise HTTPException(
+                status_code=400,
+                detail="Missing 'rule_group1' in prompt.",
+            )
+        if v['rule_group1'] != 'windows':
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid 'rule_group1'. Only 'windows' is supported.",
             )
         return v
 
