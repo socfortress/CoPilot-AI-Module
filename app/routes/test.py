@@ -7,10 +7,9 @@ from services.wazuh_rule_exclusion import wazuh_assistant
 test_router = APIRouter()
 
 
-@test_router.post("/test", response_model=TestResponse)
+@test_router.post("/wazuh-rule-exclusion", response_model=TestResponse)
 async def post_test(
     request: TestRequest,
-    license_key: str,
     # feature_name: str = Depends(validate_license),
 ):
     logger.info("Test Route Called")
