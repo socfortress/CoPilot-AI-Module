@@ -29,6 +29,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy your application into the Docker image
 COPY . .
 
+# Obfuscate all .py files in the directory
+RUN pyarmor obfuscate --recursive .
+
 # Environment variables for Cryptolens (as in the original Dockerfile)
 ARG CRYPTOLENS_KEY
 ENV CRYPTOLENS_KEY=${CRYPTOLENS_KEY}
