@@ -30,7 +30,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Obfuscate all .py files in the directory
-RUN pyarmor obfuscate --recursive .
+RUN pyarmor gen --platform linux.x86_64 .
+
+# Copy all non-Python files to the dist directory
+RUN find . -type f ! -name "*.py" -exec cp --parents \{\} dist \;
 
 # Environment variables for Cryptolens (as in the original Dockerfile)
 ARG CRYPTOLENS_KEY
@@ -40,4 +43,4 @@ ARG CRYPTOLENS_PRODUCT_ID
 ENV CRYPTOLENS_PRODUCT_ID=${CRYPTOLENS_PRODUCT_ID}
 
 # Run your application
-CMD ["sh", "-c", "ls -la && python module.py"]
+CMD ["sh", "-c", "ls -la && python dist/module.py"]
