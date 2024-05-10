@@ -56,6 +56,7 @@ openai==1.28.0
 ordered-set==4.1.0
 orjson==3.10.3
 packaging==23.2
+PyArmor
 pydantic==2.7.1
 pydantic_core==2.18.2
 Pygments==2.18.0
@@ -66,7 +67,6 @@ python-iso639==2024.4.27
 python-magic==0.4.27
 python-multipart==0.0.9
 PyYAML==6.0.1
-PyArmor
 rapidfuzz==3.9.0
 regex==2024.5.10
 requests==2.31.0

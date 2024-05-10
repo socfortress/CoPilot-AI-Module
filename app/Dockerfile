@@ -35,6 +35,9 @@ RUN pyarmor gen --platform linux.x86_64 .
 # Copy all non-Python files to the dist directory
 RUN find . -type f ! -name "*.py" -exec cp --parents \{\} dist \;
 
+# Remove everything but the dist directory
+RUN find . ! -path "./dist*" -delete
+
 # Environment variables for Cryptolens (as in the original Dockerfile)
 ARG CRYPTOLENS_KEY
 ENV CRYPTOLENS_KEY=${CRYPTOLENS_KEY}

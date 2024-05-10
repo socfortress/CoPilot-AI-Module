@@ -1,12 +1,13 @@
+import json
+import re
+
 from datamgmt.configmanager import get_openai_from_config
 from langchain import ConversationChain
 from langchain import PromptTemplate
 from langchain.agents import AgentType
-import json
 from langchain.agents import initialize_agent
 from langchain.agents import load_tools
 from langchain.agents.load_tools import get_all_tool_names
-import re
 from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.output_parsers import PydanticOutputParser
@@ -16,10 +17,10 @@ from langchain_community.document_loaders import UnstructuredURLLoader
 from langchain_community.document_loaders import UnstructuredXMLLoader
 from langchain_community.tools import ShellTool
 from langchain_core.exceptions import OutputParserException
-from pydantic import validator
 from loguru import logger
 from pydantic import BaseModel
 from pydantic import Field
+from pydantic import validator
 from schema.test import TestRequest
 from schema.test import TestResponse
 
@@ -31,21 +32,24 @@ class Country(BaseModel):
 
 class WazuhExclusionRuleData(BaseModel):
     wazuh_rule: str = Field(
-        ..., description="The XML formatted Wazuh rule created for exclusion purposes.",
+        ...,
+        description="The XML formatted Wazuh rule created for exclusion purposes.",
     )
     explanation: str = Field(
         ...,
         description="A detailed explanation of the purpose and function of the new rule.",
     )
 
-    @validator('wazuh_rule', 'explanation', pre=True)
+    @validator("wazuh_rule", "explanation", pre=True)
     def cleanup(cls, value):
         # Add your cleanup logic here
         cleaned_value = value.strip()  # For example, remove leading/trailing whitespace
         return cleaned_value
 
 
-llm = ChatOpenAI(model_name="gpt-4-turbo", openai_api_key=get_openai_from_config().OPENAI_API_KEY)
+llm = ChatOpenAI(
+    model_name="gpt-4-turbo", openai_api_key=get_openai_from_config().OPENAI_API_KEY,
+)
 shell_tool = ShellTool(handle_parsing_errors=True)
 parser = PydanticOutputParser(pydantic_object=WazuhExclusionRuleData)
 
@@ -190,6 +194,7 @@ async def format_chat_prompt(
         windows_field_names_to_prefer=windows_field_names_to_prefer,
     )
 
+
 def extract_rule_xml_from_output(raw_output: str) -> str:
     """
     Extracts XML content from the given raw output string.
@@ -207,6 +212,7 @@ def extract_rule_xml_from_output(raw_output: str) -> str:
         return match.group(1)  # Return the matched XML content
     return ""  # Return an empty string if no match is found
 
+
 def extract_json_from_raw_output(raw_output: str) -> tuple:
     """
     Extracts the explanation and wazuh_rule from the given raw output string.
@@ -223,11 +229,15 @@ def extract_json_from_raw_output(raw_output: str) -> tuple:
     if match:
         json_output = match.group(1)  # Extract the JSON output
         data = json.loads(json_output)  # Parse the JSON output
-        explanation = data.get('explanation', '')  # Extract the explanation
-        wazuh_rule = data.get('wazuh_rule', '')  # Extract the wazuh_rule
-        wazuh_rule = re.sub(r'(?<=<rule id=")[^"]*', 'replace_me', wazuh_rule)
+        explanation = data.get("explanation", "")  # Extract the explanation
+        wazuh_rule = data.get("wazuh_rule", "")  # Extract the wazuh_rule
+        wazuh_rule = re.sub(r'(?<=<rule id=")[^"]*', "replace_me", wazuh_rule)
         return explanation, wazuh_rule
-    return "Unfortunately, I couldn't extract the explanation and from the output. Please check the output manually.", extract_rule_xml_from_output(raw_output)
+    return (
+        "Unfortunately, I couldn't extract the explanation and from the output. Please check the output manually.",
+        extract_rule_xml_from_output(raw_output),
+    )
+
 
 # ! WILL RETRY WHOLE PROCESS IF ERROR ! #
 async def wazuh_assistant(prompt: TestRequest, max_retries: int = 3) -> TestResponse:
@@ -262,7 +272,9 @@ async def wazuh_assistant(prompt: TestRequest, max_retries: int = 3) -> TestResp
                 success=True,
             )
         except OutputParserException as e:
-            explanation_output, wazuh_rule = extract_json_from_raw_output(raw_result.content)
+            explanation_output, wazuh_rule = extract_json_from_raw_output(
+                raw_result.content,
+            )
             logger.error(f"Attempt failed with OutputParserException: {e}")
             return TestResponse(
                 wazuh_rule=wazuh_rule,
@@ -286,5 +298,5 @@ async def artifact_analysis(prompt: TestRequest) -> TestResponse:
     artifact_docs = await load_url_data(
         [
             "https://docs.velociraptor.app/artifact_references/",
-        ]
+        ],
     )
