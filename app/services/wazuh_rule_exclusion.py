@@ -2,13 +2,6 @@ import json
 import re
 
 from datamgmt.configmanager import get_openai_from_config
-from langchain import ConversationChain
-from langchain import PromptTemplate
-from langchain.agents import AgentType
-from langchain.agents import initialize_agent
-from langchain.agents import load_tools
-from langchain.agents.load_tools import get_all_tool_names
-from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts.chat import ChatPromptTemplate
@@ -48,7 +41,8 @@ class WazuhExclusionRuleData(BaseModel):
 
 
 llm = ChatOpenAI(
-    model_name="gpt-4-turbo", openai_api_key=get_openai_from_config().OPENAI_API_KEY,
+    model_name="gpt-4-turbo",
+    openai_api_key=get_openai_from_config().OPENAI_API_KEY,
 )
 shell_tool = ShellTool(handle_parsing_errors=True)
 parser = PydanticOutputParser(pydantic_object=WazuhExclusionRuleData)
@@ -300,3 +294,5 @@ async def artifact_analysis(prompt: TestRequest) -> TestResponse:
             "https://docs.velociraptor.app/artifact_references/",
         ],
     )
+    logger.info(f"Artifacts: {artifact_docs}")
+    return None

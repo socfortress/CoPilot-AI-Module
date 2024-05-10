@@ -1,11 +1,7 @@
 from fastapi import APIRouter
-from fastapi import Depends
 from loguru import logger
-from schema.event_shipper import EventShipperPayload
 from schema.test import TestRequest
 from schema.test import TestResponse
-from services.event_shipper import event_shipper
-from services.license import validate_license
 from services.wazuh_rule_exclusion import wazuh_assistant
 
 test_router = APIRouter()
