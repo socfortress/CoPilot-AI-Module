@@ -30,14 +30,14 @@ class ConfigManager:
 
 ########################## ! OPENAI ! ##########################
 class OpenAIModel(BaseModel):
-    openai_api_key: str = Field(
+    OPENAI_API_KEY: str = Field(
         ...,
-        alias="openai_api_key",
+        alias="OPENAI_API_KEY",
     )
 
 
 def get_openai_from_config():
     config_manager = ConfigManager("config.ini")
     return OpenAIModel(
-        openai_api_key=config_manager.get("OPENAI", "openai_api_key"),
+        OPENAI_API_KEY=config_manager.get("OPENAI", "OPENAI_API_KEY"),
     )

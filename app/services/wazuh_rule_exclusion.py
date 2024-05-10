@@ -45,7 +45,7 @@ class WazuhExclusionRuleData(BaseModel):
         return cleaned_value
 
 
-llm = ChatOpenAI(model_name="gpt-4-turbo")
+llm = ChatOpenAI(model_name="gpt-4-turbo", openai_api_key=get_openai_from_config().OPENAI_API_KEY)
 shell_tool = ShellTool(handle_parsing_errors=True)
 parser = PydanticOutputParser(pydantic_object=WazuhExclusionRuleData)
 
