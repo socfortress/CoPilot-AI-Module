@@ -1,0 +1,95 @@
+<group name="rule_exclusion,">
+  <!-- Lower Remote Thread Creation In Uncommon Target Image Sigma due to too many FPs -->
+  <rule id="900071" level="8">
+    <if_sid>200051</if_sid>
+    <field name="name" type="pcre2">(?i)^Remote Thread Creation In Uncommon Target Image$</field>
+    <description>Remote Thread Creation In Uncommon Target Image</description>
+    <options>no_full_log</options>
+  </rule>
+  <!-- Exclude TEAMS network connection SIGMA Alert -->
+  <rule id="900072" level="1">
+    <if_sid>200051</if_sid>
+    <field name="name" type="pcre2">(?i)^Suspicious Program Location with Network Connections$</field>
+    <field name="event.Image" type="pcre2">(?i)AppData\\Local\\Microsoft\\Teams\\current\\Teams\.exe$</field>
+    <description>Exclude TEAMS network connection SIGMA Alert</description>
+    <options>no_full_log</options>
+  </rule>
+    <!-- Exclude Office Creating Local LNK files NEW -->
+  <rule id="900073" level="1">
+    <if_sid>92214</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)^C:\\\\Program Files\\\\Microsoft Office\\\\root\\\\Office16\\\\OUTLOOK\.EXE$|(?i)^C:\\\\Program Files\\\\Microsoft Office\\\\root\\\\Office16\\\\EXCEL\.EXE$|(?i)^C:\\\\Program Files\\\\Microsoft Office\\\\root\\\\Office16\\\\WINWORD\.EXE$|(?i)^C:\\\\Program Files \(x86\)\\\\Microsoft Office\\\\root\\\\Office16\\\\WINWORD\.EXE$|(?i)^C:\\\\Program Files \(x86\)\\\\Microsoft Office\\\\Office16\\\\WINWORD\.EXE$|(?i)^C:\\\\Program Files \(x86\)\\\\Microsoft Office\\\\root\\\\Office16\\\\EXCEL\.EXE$</field>
+    <field name="win.eventdata.targetFilename" type="pcre2">(?i)^C:\\\\Users\\\\\w+\\\\AppData\\\\Roaming\\\\Microsoft\\\\Office\\\\Recent\\\\.+\.LNK$|(?i)^C:\\\\Users\\\\\w+\\\\AppData\\\\Roaming\\\\Microsoft\\\\Internet Explorer\\\\Quick Launch\\\\.+\.LNK$|(?i)^C:\\\\Users\\\\\w+\\\\AppData\\\\Roaming\\\\Microsoft\\\\Word\.lnk$|(?i)^C:\\\\Users\\\\\w+\\\\AppData\\\\Roaming\\\\Microsoft\\\\Excel\\\\.+\.lnk$|(?i)^C:\\\\Users\\\\\w+\\\\AppData\\\\Roaming\\\\Microsoft\\\\Word\\\\.*?\\\\[^\\\\]+\.lnk$</field>
+    <description>MITRE T1187 is only regarding LNK files created on external resources allowing local  profile specific sources.</description>
+    <options>no_full_log</options>
+  </rule>
+  <!-- Exclude Windows Defender DNS Queries -->
+  <rule id="900074" level="1">
+    <if_sid>121101</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)^C:\\\\Program Files\\\\Windows Defender Advanced Threat Protection</field>
+    <description>Exceptions rule created for Exclude Windows Defender DNS Queries.</description>
+    <options>no_full_log</options>
+  </rule>
+  <!-- Exclude Windows Defender SIGMA Rules -->
+  <rule id="900075" level="1">
+    <if_sid>62123</if_sid>
+    <field name="win.eventdata.path" type="pcre2">(?i)^file:_C:\\\\Program Files \(x86\)\\\\ossec-agent\\\\shared</field>
+    <description>Exceptions rule created for Windows Defender SIGMA Rules.</description>
+    <options>no_full_log</options>
+  </rule>
+  <!-- Lower File Changes OSQUERY -->
+  <rule id="900076" level="5">
+    <if_sid>200259</if_sid>
+    <description>Detects file and folder permission changes.</description>
+    <options>no_full_log</options>
+  </rule>
+  <!-- Exclude NINJA RMM -->
+  <rule id="900077" level="1">
+    <if_sid>92920</if_sid>
+    <field name="win.eventdata.sourceImage" type="pcre2">(?i)^C:\\\\Program Files \(x86\)\\\\[A-Za-z0-9]+.*\\\\NinjaRMMAgent\.exe$</field>
+    <description>Exceptions NINJA RMM.</description>
+    <options>no_full_log</options>
+  </rule>
+  <!-- Exclude NINJA RMM -->
+  <rule id="900078" level="1">
+    <if_sid>109102</if_sid>
+    <field name="win.eventdata.sourceImage" type="pcre2">(?i)^C:\\\\Program Files \(x86\)\\\\[A-Za-z0-9]+.*\\\\NinjaRMMAgent\.exe$</field>
+    <description>Exceptions NINJA RMM.</description>
+    <options>no_full_log</options>
+  </rule>
+  <!-- Exclude HPAnalytics Proc -->
+  <rule id="900079" level="1">
+    <if_sid>92920</if_sid>
+    <field name="win.eventdata.sourceImage" type="pcre2">(?i)^C:\\\\Windows\\\\System32\\\\DriverStore\\\\FileRepository\\\\[^\\\\]+\\\\x64\\\\Provider Data Sources\\\\ProcInfo\\\\ProcInfo\.exe$</field>
+    <description>Exceptions HPAnalytics Proc.</description>
+    <options>no_full_log</options>
+  </rule>
+  <!-- Exclude NINJA Agent -->
+  <rule id="900080" level="1">
+    <if_sid>109102</if_sid>
+    <field name="win.eventdata.sourceImage" type="pcre2">(?i)^C:\\\\Program Files \(x86\)\\\\[A-Za-z0-9]+.*\\\\njvmagent.exe$|(?i)^C:\\\\Program Files\\\\Huntress\\\\Rio\\\\Rio\.exe$</field>
+    <description>Exceptions NINJA RMM.</description>
+    <options>no_full_log</options>
+  </rule>
+  <!-- Exclude NINJA RMM -->
+  <rule id="900081" level="1">
+    <if_sid>110109</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)^C:\\\\Program Files \(x86\)\\\\[A-Za-z0-9]+.*\\\\NinjaRMMAgent\.exe$</field>
+    <description>Exceptions NINJA RMM.</description>
+    <options>no_full_log</options>
+  </rule>
+  <!-- Exclude Windows Admin Center -->
+  <rule id="900082" level="1">
+    <if_sid>92151</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)^C:\\\\Program Files\\\\Windows Admin Center\\\\sme\.exe$</field>
+    <field name="win.eventdata.user" type="pcre2">(?i)^NT AUTHORITY\\\\NETWORK SERVICE$</field>
+    <description>Exceptions Windows Admin Center.</description>
+    <options>no_full_log</options>
+  </rule>
+  <!-- Exclude OneDrive Process Injection -->
+  <rule id="900083" level="3">
+    <if_sid>92910</if_sid>
+    <field name="win.eventdata.sourceImage" type="pcre2">\\\\Microsoft\\\\OneDrive\\\\Update\\\\OneDriveSetup\.exe$</field>
+    <description>Exclude OneDrive Setup</description>
+    <options>no_full_log</options>
+  </rule>
+</group>
