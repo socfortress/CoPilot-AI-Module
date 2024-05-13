@@ -226,6 +226,7 @@ def extract_json_from_raw_output(raw_output: str) -> tuple:
         explanation = data.get("explanation", "")  # Extract the explanation
         wazuh_rule = data.get("wazuh_rule", "")  # Extract the wazuh_rule
         wazuh_rule = re.sub(r'(?<=<rule id=")[^"]*', "replace_me", wazuh_rule)
+        wazuh_rule = re.sub(r'(</.*?>)', r'\1\n', wazuh_rule)  # Add a newline after every closing </>
         return explanation, wazuh_rule
     return (
         "Unfortunately, I couldn't extract the explanation and from the output. Please check the output manually.",
@@ -274,7 +275,7 @@ async def wazuh_assistant(prompt: TestRequest, max_retries: int = 3) -> TestResp
                 wazuh_rule=wazuh_rule,
                 explanation=explanation_output,
                 message="Failed to parse output, returning raw XML as JSON.",
-                success=False,
+                success=True,
             )
         except Exception as e:
             logger.error(f"Attempt failed with unexpected exception: {e}")
