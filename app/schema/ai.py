@@ -63,7 +63,7 @@ payload = {
 payload = {}
 
 
-class TestRequest(BaseModel):
+class WazuhRuleExclusionRequest(BaseModel):
     integration: str = Field(..., example="wazuh-rule-exclusion")
     prompt: dict = Field(..., example=payload)
 
@@ -91,7 +91,7 @@ class TestRequest(BaseModel):
         return v
 
 
-class TestResponse(BaseModel):
+class WazuhRuleExclusionResponse(BaseModel):
     wazuh_rule: str
     explanation: str
     message: str

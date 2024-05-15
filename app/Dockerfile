@@ -38,12 +38,5 @@ RUN find . -type f ! -name "*.py" -exec cp --parents \{\} dist \;
 # Remove everything but the dist directory
 RUN find . ! -path "./dist*" -delete
 
-# Environment variables for Cryptolens (as in the original Dockerfile)
-ARG CRYPTOLENS_KEY
-ENV CRYPTOLENS_KEY=${CRYPTOLENS_KEY}
-
-ARG CRYPTOLENS_PRODUCT_ID
-ENV CRYPTOLENS_PRODUCT_ID=${CRYPTOLENS_PRODUCT_ID}
-
 # Run your application
 CMD ["sh", "-c", "ls -la && python dist/module.py"]
