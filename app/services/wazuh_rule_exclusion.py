@@ -181,7 +181,9 @@ async def wazuh_assistant(
 ) -> WazuhRuleExclusionResponse:
     for _ in range(max_retries):
         try:
-            example_rules = await load_xml_data("services/example_data.xml")
+            script_dir = os.path.dirname(os.path.realpath(__file__))
+            filename = os.path.join(script_dir, "wazuh_rules_example_data.xml")
+            example_rules = await load_xml_data(filename)
             pcre2_docs = await load_url_data(
                 [
                     "https://documentation.wazuh.com/current/user-manual/ruleset/ruleset-xml-syntax/regex.html",
