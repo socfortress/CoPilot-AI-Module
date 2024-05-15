@@ -1,7 +1,7 @@
 import uvicorn
-from routes.ai import ai_router
 from fastapi import FastAPI
 from loguru import logger
+from routes.ai import ai_router
 
 app = FastAPI(description="Copilot-AI-Module", version="0.0.1")
 

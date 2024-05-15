@@ -1,7 +1,7 @@
-from schema.ai import WazuhRuleExclusionRequest
-from schema.ai import WazuhRuleExclusionResponse
 from fastapi import APIRouter
 from loguru import logger
+from schema.ai import WazuhRuleExclusionRequest
+from schema.ai import WazuhRuleExclusionResponse
 from services.wazuh_rule_exclusion import wazuh_assistant
 
 ai_router = APIRouter()

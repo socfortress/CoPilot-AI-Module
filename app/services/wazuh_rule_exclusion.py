@@ -2,8 +2,6 @@ import json
 import os
 import re
 
-from schema.ai import WazuhRuleExclusionRequest
-from schema.ai import WazuhRuleExclusionResponse
 from langchain.chat_models import ChatOpenAI
 from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts.chat import ChatPromptTemplate
@@ -16,6 +14,8 @@ from loguru import logger
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import validator
+from schema.ai import WazuhRuleExclusionRequest
+from schema.ai import WazuhRuleExclusionResponse
 
 
 class Country(BaseModel):
