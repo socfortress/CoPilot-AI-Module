@@ -1,5 +1,5 @@
 import uvicorn
-from app.routes.ai import ai_router
+from routes.ai import ai_router
 from fastapi import FastAPI
 from loguru import logger
 

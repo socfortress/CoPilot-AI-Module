@@ -2,8 +2,8 @@ import json
 import os
 import re
 
-from app.schema.ai import WazuhRuleExclusionRequest
-from app.schema.ai import WazuhRuleExclusionResponse
+from schema.ai import WazuhRuleExclusionRequest
+from schema.ai import WazuhRuleExclusionResponse
 from langchain.chat_models import ChatOpenAI
 from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts.chat import ChatPromptTemplate
