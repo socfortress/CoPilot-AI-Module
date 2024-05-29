@@ -2,6 +2,8 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import validator
+from typing import List
+from typing import Optional
 
 # ! EXAMPLE PAYLOAD ! #
 payload = {
@@ -108,3 +110,14 @@ class WazuhRuleExclusionResponse(BaseModel):
     explanation: str
     message: str
     success: bool
+
+
+class Artifacts(BaseModel):
+    description: str = Field(..., description="Description of the artifact.")
+    name: str = Field(..., description="Name of the artifact.")
+
+class VelociraptorArtifactRecommendationRequest(BaseModel):
+    artifacts: Optional[List[Artifacts]]
+    #prompt: dict = Field(..., example=payload)
+
+
