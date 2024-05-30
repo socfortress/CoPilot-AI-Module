@@ -18,7 +18,7 @@ from loguru import logger
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import validator
-from schema.ai import WazuhRuleExclusionRequest, VelociraptorArtifactRecommendationRequest
+from schema.ai import WazuhRuleExclusionRequest, VelociraptorArtifactRecommendationRequest, VelociraptorArtifactRecommendationResponse
 from schema.ai import WazuhRuleExclusionResponse
 
 
@@ -254,20 +254,24 @@ async def wazuh_assistant(
 
 # ! VELOCIRAPTOR ANALYSIS ! #
 
+
+velo_artifact_recommendation_parser = PydanticOutputParser(pydantic_object=VelociraptorArtifactRecommendationResponse)
+
+
 VELO_ARTIFACT_RECOMMENDATION_PROMPT = """
-    You are an expert at Velociraptor. The advanced open-source endpoint monitoring, digital forensic and cyber response platform. It provides you with the ability to more effectively respond to a wide range of digital forensic and cyber incident response investigations and data breaches.
-    Given the following artifacts with their descriptions, suggest the best list of artifacts for the task of investigating this payload further {payload}.
+    You are an expert at Velociraptor, the advanced open-source endpoint monitoring, digital forensic, and cyber response platform. It provides the ability to more effectively respond to a wide range of digital forensic and cyber incident response investigations and data breaches.
+    Given the following artifacts with their descriptions, suggest a list of 5 artifacts for the task of investigating this payload further: {payload}.
 
     Artifacts:
     {artifacts}
 
-    Suggest the best artifact:
+    Suggest the best 5 artifacts:
     {format_instructions}
 """
 
 async def artifact_analysis(
     request: VelociraptorArtifactRecommendationRequest,
-) -> WazuhRuleExclusionResponse:
+) -> VelociraptorArtifactRecommendationResponse:
     # ! I should host an API that returns the artifacts data ...actually no ill call the velo API !
     payload = {
         "alert": "Malware Detected",
@@ -279,14 +283,16 @@ async def artifact_analysis(
 
 
 
-    # Get the first 100 artifacts
+
     # Only get the artifacts that start with `Windows.`, `Linux.`, `MacOS.`, or `Generic.`.
-    request.artifacts = [artifact for artifact in request.artifacts if artifact.name.startswith(("Windows."))]
+    os_artifacts = ["Windows", "Linux", "MacOS", "Generic"]
+    os_artifacts = [os_artifact for os_artifact in os_artifacts if os_artifact in request.os or os_artifact == "Generic"]
+    #request.artifacts = [artifact for artifact in request.artifacts if artifact.name.startswith(("Windows."))]
+    request.artifacts = [artifact for artifact in request.artifacts if any(artifact.name.startswith(os_artifact + ".") for os_artifact in os_artifacts)]
     logger.info(f"Number of artifacts after filtering: {len(request.artifacts)}")
 
     # Format the artifacts for the prompt
     artifact_descriptions = "\n\n".join([f"Name: {artifact.name}\nDescription: {artifact.description}" for artifact in request.artifacts])
-    #artifact_descriptions = "\n\n".join([f"Name: {artifact.name}\nDescription: {artifact.description}" for artifact in first_100_artifacts])
 
     message = HumanMessagePromptTemplate.from_template(
         template=VELO_ARTIFACT_RECOMMENDATION_PROMPT,
@@ -303,7 +309,12 @@ async def artifact_analysis(
 
     # Parse the output
     data = velo_artifact_recommendation_parser.parse(raw_result.content)
-    logger.info(f"Artifact: {data.name}, Explanation: {data.explanation}")
+    logger.info(f"Recommendations: {[artifact.name for artifact in data.recommendations]}")
+    return VelociraptorArtifactRecommendationResponse(
+        recommendations=data.recommendations,
+        success=True,
+        message="Successfully received test message.",
+    )
 
 
 

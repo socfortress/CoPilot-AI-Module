@@ -118,6 +118,39 @@ class Artifacts(BaseModel):
 
 class VelociraptorArtifactRecommendationRequest(BaseModel):
     artifacts: Optional[List[Artifacts]]
+    os: str = Field(..., example="Windows")
     #prompt: dict = Field(..., example=payload)
 
+
+class VelociraptorArtifactRecommendation(BaseModel):
+    name: str = Field(
+        ...,
+        description="The name of the artifact."
+    )
+    description: str = Field(
+        ...,
+        description="A description of the artifact."
+    )
+    explanation: str = Field(
+        ...,
+        description="A detailed explanation of the purpose and why the artifact was selected."
+    )
+
+class VelociraptorAIArtifactRecommendationRequest(BaseModel):
+    artifacts: list[VelociraptorArtifactRecommendation]
+    os: str = Field(
+        ...,
+        description="The operating system for which the artifacts should be considered."
+    )
+
+class VelociraptorArtifactRecommendationResponse(BaseModel):
+    recommendations: list[VelociraptorArtifactRecommendation]
+    success: bool = Field(
+        ...,
+        description="Whether the request was successful."
+    )
+    message: str = Field(
+        ...,
+        description="A message describing the result of the request."
+    )
 
