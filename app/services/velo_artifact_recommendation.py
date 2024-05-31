@@ -1,18 +1,20 @@
 import os
 
-
 from langchain.chat_models import ChatOpenAI
 from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts.chat import ChatPromptTemplate
 from langchain.prompts.chat import HumanMessagePromptTemplate
 from loguru import logger
-from schema.ai import VelociraptorArtifactRecommendationRequest, VelociraptorArtifactRecommendationResponse
+from schema.ai import VelociraptorArtifactRecommendationRequest
+from schema.ai import VelociraptorArtifactRecommendationResponse
 
 llm = ChatOpenAI(
     model_name="gpt-4o",
     openai_api_key=os.getenv("OPENAI_API_KEY"),
 )
-velo_artifact_recommendation_parser = PydanticOutputParser(pydantic_object=VelociraptorArtifactRecommendationResponse)
+velo_artifact_recommendation_parser = PydanticOutputParser(
+    pydantic_object=VelociraptorArtifactRecommendationResponse,
+)
 
 
 VELO_ARTIFACT_RECOMMENDATION_PROMPT = """
@@ -26,19 +28,38 @@ VELO_ARTIFACT_RECOMMENDATION_PROMPT = """
     {format_instructions}
 """
 
+
 def filter_payload(payload):
     # Remove all field names from the prompt that do not start with `data_`
     return {k: v for k, v in payload.items() if k.startswith("data_")}
 
+
 def filter_artifacts_by_os(artifacts, os):
     # Only get the artifacts that start with `Windows.`, `Linux.`, `MacOS.`, or `Generic.`
     os_artifacts = ["Windows", "Linux", "MacOS", "Generic"]
-    os_artifacts = [os_artifact for os_artifact in os_artifacts if os_artifact in os or os_artifact == "Generic"]
-    return [artifact for artifact in artifacts if any(artifact.name.startswith(os_artifact + ".") for os_artifact in os_artifacts)]
+    os_artifacts = [
+        os_artifact
+        for os_artifact in os_artifacts
+        if os_artifact in os or os_artifact == "Generic"
+    ]
+    return [
+        artifact
+        for artifact in artifacts
+        if any(
+            artifact.name.startswith(os_artifact + ".") for os_artifact in os_artifacts
+        )
+    ]
+
 
 def format_artifacts(artifacts):
     # Format the artifacts for the prompt
-    return "\n\n".join([f"Name: {artifact.name}\nDescription: {artifact.description}" for artifact in artifacts])
+    return "\n\n".join(
+        [
+            f"Name: {artifact.name}\nDescription: {artifact.description}"
+            for artifact in artifacts
+        ],
+    )
+
 
 async def artifact_analysis(
     request: VelociraptorArtifactRecommendationRequest,
@@ -67,7 +88,9 @@ async def artifact_analysis(
 
     raw_result = llm(prompt.to_messages())
     data = velo_artifact_recommendation_parser.parse(raw_result.content)
-    logger.info(f"Recommendations: {[artifact.name for artifact in data.recommendations]}")
+    logger.info(
+        f"Recommendations: {[artifact.name for artifact in data.recommendations]}",
+    )
 
     return VelociraptorArtifactRecommendationResponse(
         recommendations=data.recommendations,
