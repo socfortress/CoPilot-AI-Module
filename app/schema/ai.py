@@ -1,9 +1,10 @@
+from typing import List
+from typing import Optional
+
 from fastapi import HTTPException
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import validator
-from typing import List
-from typing import Optional
 
 # ! EXAMPLE PAYLOAD ! #
 payload = {
@@ -86,7 +87,9 @@ class WazuhRuleExclusionRequest(BaseModel):
                     status_code=400,
                     detail="Missing 'rule_group1' or 'rule_group3' in prompt.",
                 )
-            if ("rule_group1" in v and v["rule_group1"] != "windows") and ("rule_group3" in v and v["rule_group3"] != "windows"):
+            if ("rule_group1" in v and v["rule_group1"] != "windows") and (
+                "rule_group3" in v and v["rule_group3"] != "windows"
+            ):
                 raise HTTPException(
                     status_code=400,
                     detail="Invalid 'rule_group1' or 'rule_group3'. At least one must be 'windows'.",
@@ -116,41 +119,34 @@ class Artifacts(BaseModel):
     description: str = Field(..., description="Description of the artifact.")
     name: str = Field(..., description="Name of the artifact.")
 
+
 class VelociraptorArtifactRecommendationRequest(BaseModel):
     artifacts: Optional[List[Artifacts]]
     os: str = Field(..., example="Windows")
-    #prompt: dict = Field(..., example=payload)
+    prompt: dict = Field(..., example=payload)
 
 
 class VelociraptorArtifactRecommendation(BaseModel):
-    name: str = Field(
-        ...,
-        description="The name of the artifact."
-    )
-    description: str = Field(
-        ...,
-        description="A description of the artifact."
-    )
+    name: str = Field(..., description="The name of the artifact.")
+    description: str = Field(..., description="A description of the artifact.")
     explanation: str = Field(
         ...,
-        description="A detailed explanation of the purpose and why the artifact was selected."
+        description="A detailed explanation of the purpose and why the artifact was selected.",
     )
+
 
 class VelociraptorAIArtifactRecommendationRequest(BaseModel):
     artifacts: list[VelociraptorArtifactRecommendation]
     os: str = Field(
         ...,
-        description="The operating system for which the artifacts should be considered."
+        description="The operating system for which the artifacts should be considered.",
     )
+
 
 class VelociraptorArtifactRecommendationResponse(BaseModel):
     recommendations: list[VelociraptorArtifactRecommendation]
-    success: bool = Field(
-        ...,
-        description="Whether the request was successful."
-    )
+    success: bool = Field(..., description="Whether the request was successful.")
     message: str = Field(
         ...,
-        description="A message describing the result of the request."
+        description="A message describing the result of the request.",
     )
-

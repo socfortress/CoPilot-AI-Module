@@ -4,21 +4,17 @@ import re
 
 from langchain.chat_models import ChatOpenAI
 from langchain.output_parsers import PydanticOutputParser
-from langchain_community.document_loaders import TextLoader
 from langchain.prompts.chat import ChatPromptTemplate
-from langchain.vectorstores import FAISS
-from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.prompts.chat import HumanMessagePromptTemplate
 from langchain_community.document_loaders import UnstructuredURLLoader
 from langchain_community.document_loaders import UnstructuredXMLLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.tools import ShellTool
 from langchain_core.exceptions import OutputParserException
 from loguru import logger
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import validator
-from schema.ai import WazuhRuleExclusionRequest, VelociraptorArtifactRecommendationRequest, VelociraptorArtifactRecommendationResponse
+from schema.ai import WazuhRuleExclusionRequest
 from schema.ai import WazuhRuleExclusionResponse
 
 
@@ -43,18 +39,13 @@ class WazuhExclusionRuleData(BaseModel):
         cleaned_value = value.strip()  # For example, remove leading/trailing whitespace
         return cleaned_value
 
+
 class VelociraptorArtifactRecommendation(BaseModel):
-    name: str = Field(
-        ...,
-        description="The name of the artifact."
-    )
-    description: str = Field(
-        ...,
-        description="A description of the artifact."
-    )
+    name: str = Field(..., description="The name of the artifact.")
+    description: str = Field(..., description="A description of the artifact.")
     explanation: str = Field(
         ...,
-        description="A detailed explanation of the purpose and why the artifact was selected."
+        description="A detailed explanation of the purpose and why the artifact was selected.",
     )
 
 
@@ -64,7 +55,9 @@ llm = ChatOpenAI(
 )
 shell_tool = ShellTool(handle_parsing_errors=True)
 parser = PydanticOutputParser(pydantic_object=WazuhExclusionRuleData)
-velo_artifact_recommendation_parser = PydanticOutputParser(pydantic_object=VelociraptorArtifactRecommendation)
+velo_artifact_recommendation_parser = PydanticOutputParser(
+    pydantic_object=VelociraptorArtifactRecommendation,
+)
 
 PROMPT_EXAMPLE = """
     Provide information about {country}.
@@ -102,14 +95,6 @@ NEW_PROMPT_EXCLUSION_RULE = """
     Example rules in PCRE2 syntax: {example_rules}. I want you to favor the field names: {windows_field_names_to_prefer} if these are applicable. If you find that the field names are not applicable, then you can use other field names.
     {format_instructions}
 """
-
-
-VELO_PROMPT_TEST = """
-    You are an expert at Incident Response using the tool Velociraptor.
-    I want you to select the recemmonded artifact you want me to run based on this Wazuh Alert: {payload}.
-
-    Here are the artifacts to select from: {artifacts}
-    """
 
 
 async def load_xml_data(file_path: str):
@@ -250,74 +235,3 @@ async def wazuh_assistant(
         message="Failed to receive test message after multiple attempts.",
         success=False,
     )
-
-
-# ! VELOCIRAPTOR ANALYSIS ! #
-
-
-velo_artifact_recommendation_parser = PydanticOutputParser(pydantic_object=VelociraptorArtifactRecommendationResponse)
-
-
-VELO_ARTIFACT_RECOMMENDATION_PROMPT = """
-    You are an expert at Velociraptor, the advanced open-source endpoint monitoring, digital forensic, and cyber response platform. It provides the ability to more effectively respond to a wide range of digital forensic and cyber incident response investigations and data breaches.
-    Given the following artifacts with their descriptions, suggest a list of 5 artifacts for the task of investigating this payload further: {payload}.
-
-    Artifacts:
-    {artifacts}
-
-    Suggest the best 5 artifacts:
-    {format_instructions}
-"""
-
-async def artifact_analysis(
-    request: VelociraptorArtifactRecommendationRequest,
-) -> VelociraptorArtifactRecommendationResponse:
-    # ! I should host an API that returns the artifacts data ...actually no ill call the velo API !
-    payload = {
-        "alert": "Malware Detected",
-    }
-
-    # Get the number of items in the artifacts list
-    num_artifacts = len(request.artifacts)
-    logger.info(f"Number of artifacts: {num_artifacts}")
-
-
-
-
-    # Only get the artifacts that start with `Windows.`, `Linux.`, `MacOS.`, or `Generic.`.
-    os_artifacts = ["Windows", "Linux", "MacOS", "Generic"]
-    os_artifacts = [os_artifact for os_artifact in os_artifacts if os_artifact in request.os or os_artifact == "Generic"]
-    #request.artifacts = [artifact for artifact in request.artifacts if artifact.name.startswith(("Windows."))]
-    request.artifacts = [artifact for artifact in request.artifacts if any(artifact.name.startswith(os_artifact + ".") for os_artifact in os_artifacts)]
-    logger.info(f"Number of artifacts after filtering: {len(request.artifacts)}")
-
-    # Format the artifacts for the prompt
-    artifact_descriptions = "\n\n".join([f"Name: {artifact.name}\nDescription: {artifact.description}" for artifact in request.artifacts])
-
-    message = HumanMessagePromptTemplate.from_template(
-        template=VELO_ARTIFACT_RECOMMENDATION_PROMPT,
-    )
-    chat_prompt = ChatPromptTemplate.from_messages(messages=[message])
-    prompt = chat_prompt.format_prompt(
-        payload=payload,
-        artifacts=artifact_descriptions,
-        format_instructions=velo_artifact_recommendation_parser.get_format_instructions(),
-    )
-
-    # Run it
-    raw_result = llm(prompt.to_messages())
-
-    # Parse the output
-    data = velo_artifact_recommendation_parser.parse(raw_result.content)
-    logger.info(f"Recommendations: {[artifact.name for artifact in data.recommendations]}")
-    return VelociraptorArtifactRecommendationResponse(
-        recommendations=data.recommendations,
-        success=True,
-        message="Successfully received test message.",
-    )
-
-
-
-
-
-    return None
