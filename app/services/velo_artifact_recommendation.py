@@ -96,9 +96,10 @@ async def artifact_analysis(
         )
     except RateLimitError as e:
         logger.error(f"Rate limit exceeded: {e}")
-        raise HTTPException(
-            status_code=429,
-            detail="Rate limit exceeded. The input or output tokens must be reduced in order to run successfully.",
+        return VelociraptorArtifactRecommendationResponse(
+            recommendations=[],
+            success=False,
+            message="Rate limit exceeded. Please try again later.",
         )
     except Exception as e:
         logger.error(f"Error: {e}")
