@@ -2,11 +2,11 @@ import os
 
 from fastapi import HTTPException
 from langchain.chat_models import ChatOpenAI
-from openai import RateLimitError
 from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts.chat import ChatPromptTemplate
 from langchain.prompts.chat import HumanMessagePromptTemplate
 from loguru import logger
+from openai import RateLimitError
 from schema.ai import VelociraptorArtifactRecommendationRequest
 from schema.ai import VelociraptorArtifactRecommendationResponse
 
