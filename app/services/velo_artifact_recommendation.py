@@ -1,5 +1,6 @@
 import os
 
+from fastapi import HTTPException
 from langchain.chat_models import ChatOpenAI
 from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts.chat import ChatPromptTemplate
@@ -76,21 +77,28 @@ async def artifact_analysis(
 
     artifact_descriptions = format_artifacts(request.artifacts)
 
-    message = HumanMessagePromptTemplate.from_template(
-        template=VELO_ARTIFACT_RECOMMENDATION_PROMPT,
-    )
-    chat_prompt = ChatPromptTemplate.from_messages(messages=[message])
-    prompt = chat_prompt.format_prompt(
-        payload=payload,
-        artifacts=artifact_descriptions,
-        format_instructions=velo_artifact_recommendation_parser.get_format_instructions(),
-    )
+    try:
+        message = HumanMessagePromptTemplate.from_template(
+            template=VELO_ARTIFACT_RECOMMENDATION_PROMPT,
+        )
+        chat_prompt = ChatPromptTemplate.from_messages(messages=[message])
+        prompt = chat_prompt.format_prompt(
+            payload=payload,
+            artifacts=artifact_descriptions,
+            format_instructions=velo_artifact_recommendation_parser.get_format_instructions(),
+        )
 
-    raw_result = llm(prompt.to_messages())
-    data = velo_artifact_recommendation_parser.parse(raw_result.content)
-    logger.info(
-        f"Recommendations: {[artifact.name for artifact in data.recommendations]}",
-    )
+        raw_result = llm(prompt.to_messages())
+        data = velo_artifact_recommendation_parser.parse(raw_result.content)
+        logger.info(
+            f"Recommendations: {[artifact.name for artifact in data.recommendations]}",
+        )
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Error occurred while processing the request. Your payload contained too many tokens. Please try again with a smaller payload.",
+        )
 
     return VelociraptorArtifactRecommendationResponse(
         recommendations=data.recommendations,
