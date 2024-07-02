@@ -2,6 +2,7 @@ import os
 
 from fastapi import HTTPException
 from langchain.chat_models import ChatOpenAI
+from openai import RateLimitError
 from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts.chat import ChatPromptTemplate
 from langchain.prompts.chat import HumanMessagePromptTemplate
@@ -93,11 +94,17 @@ async def artifact_analysis(
         logger.info(
             f"Recommendations: {[artifact.name for artifact in data.recommendations]}",
         )
+    except RateLimitError as e:
+        logger.error(f"Rate limit exceeded: {e}")
+        raise HTTPException(
+            status_code=429,
+            detail="Rate limit exceeded. The input or output tokens must be reduced in order to run successfully.",
+        )
     except Exception as e:
         logger.error(f"Error: {e}")
         raise HTTPException(
             status_code=500,
-            detail="Error occurred while processing the request. Your payload contained too many tokens. Please try again with a smaller payload.",
+            detail="Error occurred while processing the request. Please try again later.",
         )
 
     return VelociraptorArtifactRecommendationResponse(
